@@ -10,6 +10,12 @@ const ToDoList = ({ showModal, onHideModal }) => {
     setTodos((existingTodos) => [enteredTodo, ...existingTodos]);
   }
 
+  function removeTodoHandler(id) {
+    setTodos((existingTodos) => {
+      return existingTodos.filter((todo) => todo.id !== id);
+    });
+  }
+
   return (
     <>
       {showModal && (
@@ -26,9 +32,17 @@ const ToDoList = ({ showModal, onHideModal }) => {
       {todos.length > 0 && (
         <ul className="grid gap-5 grid-cols-[repeat(3,30%)] justify-center">
           {todos.length > 0 &&
-            todos.map((todo) => (
-              <TodoItem key={todo.id} date={todo.date} todo={todo.todo} />
-            ))}
+            todos.map((todo) => {
+              return (
+                <TodoItem
+                  key={todo.id}
+                  id={todo.id}
+                  date={todo.date}
+                  todo={todo.todo}
+                  onRemoveTodo={removeTodoHandler}
+                />
+              );
+            })}
         </ul>
       )}
     </>
