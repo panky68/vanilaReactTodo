@@ -1,79 +1,65 @@
 import { useReducer, useState } from "react";
 
-const todoInitialInputState = {
-  todoError: false,
-  todoErrorMessage: "",
-};
-
-const dateInitialInputState = {
-  dateError: false,
-  dateErrorMessage: "",
-};
-
-const todoReducer = (state, action) => {
-  if (action.type === "EMPTY_TODO") {
-    return {
-      ...state,
-      todoError: true,
-      todoErrorMessage: "Empty Todo field not allowed",
-    };
+const Reducer = (state, action) => {
+  switch (action.type) {
+    case "EMPTY_TODO": {
+      return {
+        ...state,
+        todoError: true,
+        todoMessage: "New Todo required",
+      };
+    }
+    case "INVALIDATE_TODO": {
+      return {
+        ...state,
+        todoError: true,
+        todoMessage: "Todo should be less than 10 characters",
+      };
+    }
+    case "EMPTY_DATE": {
+      return {
+        ...state,
+        dateError: true,
+        dateMessage: "Date field required",
+      };
+    }
+    case "INTIALISE_TODO": {
+      return {
+        ...state,
+        todoError: false,
+        todoMessage: "",
+      };
+    }
+    case "INTIALISE_DATE": {
+      return {
+        ...state,
+        dateError: false,
+        dateMessage: "",
+      };
+    }
+    default: {
+      return state;
+    }
   }
-  if (action.type === "INVALIDATE_TODO") {
-    return {
-      ...state,
-      todoError: true,
-      todoErrorMessage: "Todo should be less than 10 characters",
-    };
-  }
-  if (action.type === "INTIALISE_TODO") {
-    return {
-      ...state,
-      todoError: false,
-      todoErrorMessage: "",
-    };
-  }
-  return state;
-};
-
-const dateReducer = (state, action) => {
-  if (action.type === "EMPTY_DATE") {
-    return {
-      ...state,
-      dateError: true,
-      dateErrorMessage: "Empty Date field not allowed",
-    };
-  }
-
-  if (action.type === "INTIALISE_DATE") {
-    return {
-      ...state,
-      dateError: false,
-      dateErrorMessage: "",
-    };
-  }
-
-  return state;
 };
 
 const NewTodo = ({ onCancel, onSubmit }) => {
   const [enteredTodo, setEnteredTodo] = useState(""); //state for new todo input
   const [enteredDate, setEnteredDate] = useState("");
-  const [todoState, todoDispatch] = useReducer(
-    todoReducer,
-    todoInitialInputState
-  );
-  const [dateState, dateDispatch] = useReducer(
-    dateReducer,
-    dateInitialInputState
-  );
+  const [State, Dispatch] = useReducer(Reducer, {
+    todoError: false,
+    dateError: false,
+    todoMessage: "",
+    dateMessage: "",
+  });
 
   function setEnteredTodoHandler(event) {
-    todoDispatch({ type: "INTIALISE_TODO" });
+    Dispatch({ type: "INTIALISE_TODO" });
     setEnteredTodo(event.target.value);
   }
 
   function setEnteredDateHandler(event) {
-    dateDispatch({ type: "INTIALISE_DATE" });
+    Dispatch({ type: "INTIALISE_DATE" });
     setEnteredDate(event.target.value);
   }
 
@@ -82,15 +68,21 @@ const NewTodo = ({ onCancel, onSubmit }) => {
 
     //add validation
     if (enteredTodo.trim().length === 0) {
-      todoDispatch({ type: "EMPTY_TODO" });
-      return;
+      Dispatch({ type: "EMPTY_TODO" });
     }
     if (enteredTodo.length > 10) {
-      todoDispatch({ type: "INVALIDATE_TODO" });
-      return;
+      Dispatch({ type: "INVALIDATE_TODO" });
     }
     if (enteredDate.length === 0) {
-      dateDispatch({ type: "EMPTY_DATE" });
+      Dispatch({ type: "EMPTY_DATE" });
+    }
+
+    //exit if validation fails
+    if (
+      enteredTodo.trim().length === 0 ||
+      enteredTodo.length > 10 ||
+      enteredDate.length === 0
+    ) {
       return;
     }
 
@@ -114,7 +106,7 @@ const NewTodo = ({ onCancel, onSubmit }) => {
           className="w-full mb-[0.05rem] font-bold text-[#eadbfb]"
           htmlFor="todo"
         >
-          New Todo
+          * New Todo
         </label>
         <textarea
           className="w-full p-2 rounded"
@@ -122,10 +114,8 @@ const NewTodo = ({ onCancel, onSubmit }) => {
           rows={3}
           onChange={setEnteredTodoHandler}
         />
-        {todoState.todoError && (
-          <p className="text-red-500 text-sm font-bold">
-            {todoState.todoErrorMessage}
-          </p>
+        {State.todoError && (
+          <p className="text-red-500 text-sm font-bold">{State.todoMessage}</p>
         )}
       </div>
       <div className="block mb-6">
@@ -133,7 +123,7 @@ const NewTodo = ({ onCancel, onSubmit }) => {
           className="w-full mb-[0.05rem] font-bold text-[#eadbfb]"
           htmlFor="date"
         >
-          Date
+          * Date
         </label>
         <input
           className="w-full p-2 rounded"
@@ -141,13 +131,10 @@ const NewTodo = ({ onCancel, onSubmit }) => {
           id="date"
           onChange={setEnteredDateHandler}
         />
-        {dateState.dateError && (
-          <p className="text-red-500 text-sm font-bold">
-            {dateState.dateErrorMessage}
-          </p>
+        {State.dateError && (
+          <p className="text-red-500 text-sm font-bold">{State.dateMessage}</p>
         )}
       </div>
-
 
       <div className="flex justify-between">
         <button className="inline-flex items-center gap-2 bg-[#a990fb] text-[#2a2630] rounded shadow-[0_2px_8px_rgba(0,0,0,0.2)] cursor-pointer font-[bold] p-2 border-[none] hover:bg-white">
